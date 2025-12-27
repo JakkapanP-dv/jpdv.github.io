@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Subset Sum (JavaScript)</title>
+<style>
+body { font-family: Tahoma; }
+input[type=text] { width: 420px; }
+table { border-collapse: collapse; margin-top: 15px; }
+th, td { border: 1px solid #333; padding: 6px 10px; text-align: center; }
+th { background: #eee; }
+</style>
+</head>
+<body>
+
+<h2>เลือกตัวเลขให้รวมกันได้มากที่สุด (ไม่ refresh หน้า)</h2>
+
+<form id="calcForm">
+    ชุดตัวเลข:<br>
+    <input type="text" id="numbers" placeholder="เช่น 160 81 63 81"><br>
+    <small>คั่นด้วยเว้นวรรค , หรือ |</small><br><br>
+
+    ผลรวมเป้าหมาย:<br>
+    <input type="text" id="target" placeholder="เช่น 215"><br><br>
+
+    <button type="submit">คำนวณ</button>
+</form>
+
+<div id="output"></div>
+
+<script>
+document.getElementById('calcForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // ไม่ refresh หน้า
+
+    var raw = document.getElementById('numbers').value;
+    var target = parseInt(document.getElementById('target').value, 10);
+
+    if (isNaN(target)) return;
+
+    var numbers = raw.split(/[\s,|]+/)
+                     .map(Number)
+                     .filter(function(n) { return !isNaN(n); });
+
+    var result = {
+        maxSum: 0,
+        sets: []
+    };
+
+    // -------- Backtracking --------
+    function backtrack(index, currentSet, currentSum) {
+        if (currentSum > target) return;
+
+        if (currentSum >= result.maxSum) {
+            if (currentSum > result.maxSum) {
+                result.maxSum = currentSum;
+                result.sets = [];
+            }
+            result.sets.push(currentSet.slice());
+        }
+
+        for (var i = index; i < numbers.length; i++) {
+            currentSet.push(numbers[i]);
+            backtrack(i + 1, currentSet, currentSum + numbers[i]);
+            currentSet.pop();
+        }
+    }
+
+    backtrack(0, [], 0);
+
+    // -------- เตรียมผลลัพธ์ --------
+    var rows = [];
+    result.sets.forEach(function(set) {
+        var sum = set.reduce(function(a, b) { return a + b; }, 0);
+        if (sum === result.maxSum) {
+            set.sort(function(a, b) { return b - a; }); // มาก → น้อย
+            rows.push({
+                set: set,
+                max: set[0],
+                count: set.length
+            });
+        }
+    });
+
+    // เรียงบรรทัดตามตัวเลขใหญ่สุด
+    rows.sort(function(a, b) {
+        return b.max - a.max;
+    });
+
+    // -------- แสดงผล --------
+    var html = '<h3>ผลรวมที่มากที่สุด: ' + result.maxSum + '</h3>';
+    html += '<table>';
+    html += '<tr><th>ลำดับ</th><th>ชุดตัวเลข</th><th>ตัวเลขใหญ่สุด</th><th>จำนวน</th><th>ผลรวม</th></tr>';
+
+    rows.forEach(function(r, i) {
+        html += '<tr>';
+        html += '<td>' + (i + 1) + '</td>';
+        html += '<td>' + r.set.join(' + ') + '</td>';
+        html += '<td>' + r.max + '</td>';
+        html += '<td>' + r.count + '</td>';
+        html += '<td>' + result.maxSum + '</td>';
+        html += '</tr>';
+    });
+
+    html += '</table>';
+
+    document.getElementById('output').innerHTML = html;
+});
+</script>
+
+</body>
+</html>
