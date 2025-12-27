@@ -6,9 +6,7 @@
 <title>Subset Sum (Responsive)</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     font-family: Tahoma, sans-serif;
@@ -49,18 +47,35 @@ input[type=text] {
     border: 1px solid #ccc;
 }
 
+.buttons {
+    display: flex;
+    gap: 10px;
+}
+
 button {
+    flex: 1;
     padding: 12px;
     font-size: 16px;
     border: none;
     border-radius: 6px;
-    background: #3498db;
-    color: #fff;
     cursor: pointer;
 }
 
-button:hover {
+button.calc {
+    background: #3498db;
+    color: #fff;
+}
+
+button.calc:hover {
     background: #2980b9;
+}
+
+button.clear {
+    background: #e0e0e0;
+}
+
+button.clear:hover {
+    background: #cfcfcf;
 }
 
 .result {
@@ -103,9 +118,13 @@ th {
         flex: 1 1 100%;
     }
 
+    .buttons {
+        flex: 1 1 100%;
+        justify-content: flex-end;
+    }
+
     button {
-        width: 200px;
-        align-self: flex-end;
+        max-width: 200px;
     }
 }
 </style>
@@ -127,8 +146,9 @@ th {
             <input type="text" id="target" placeholder="เช่น 215">
         </div>
 
-        <div class="field">
-            <button type="submit">คำนวณ</button>
+        <div class="buttons">
+            <button type="submit" class="calc">คำนวณ</button>
+            <button type="button" class="clear" id="clearBtn">Clear</button>
         </div>
     </form>
 
@@ -136,7 +156,10 @@ th {
 </div>
 
 <script>
-document.getElementById('calcForm').addEventListener('submit', function(e) {
+var form = document.getElementById('calcForm');
+var output = document.getElementById('output');
+
+form.addEventListener('submit', function(e) {
     e.preventDefault();
 
     var raw = document.getElementById('numbers').value;
@@ -202,7 +225,13 @@ document.getElementById('calcForm').addEventListener('submit', function(e) {
 
     html += '</table></div>';
 
-    document.getElementById('output').innerHTML = html;
+    output.innerHTML = html;
+});
+
+// -------- Clear Form --------
+document.getElementById('clearBtn').addEventListener('click', function() {
+    form.reset();
+    output.innerHTML = '';
 });
 </script>
 
