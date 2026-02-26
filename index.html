@@ -102,7 +102,14 @@ th, td {
 th {
     background: #f0f0f0;
 }
+button.move {
+    background: #9b59b6;
+    color: #fff;
+}
 
+button.move:hover {
+    background: #8e44ad;
+}
 /* Tablet / Desktop */
 @media (min-width: 768px) {
     form {
@@ -132,7 +139,7 @@ th {
 <body>
 
 <div class="container">
-    <h2>Subset Sum (Responsive, ไม่ refresh)</h2>
+    <h2>Subset Sum</h2>
 
     <form id="calcForm">
         <div class="field full">
@@ -147,9 +154,10 @@ th {
         </div>
 
         <div class="buttons">
-            <button type="submit" class="calc">คำนวณ</button>
-            <button type="button" class="clear" id="clearBtn">Clear</button>
-        </div>
+    <button type="submit" class="calc">คำนวณ</button>
+    <button type="button" class="clear" id="clearBtn">Clear</button>
+    <button type="button" class="move" id="moveCursorBtn">ไปท้ายข้อความ</button>
+</div>
     </form>
 
     <div id="output" class="result"></div>
@@ -232,6 +240,19 @@ form.addEventListener('submit', function(e) {
 document.getElementById('clearBtn').addEventListener('click', function() {
     form.reset();
     output.innerHTML = '';
+});
+
+    // -------- Move Cursor To End --------
+document.getElementById('moveCursorBtn').addEventListener('click', function() {
+    var input = document.getElementById('numbers');
+    var len = input.value.length;
+
+    input.focus();
+
+    // รองรับ browser ทั่วไป
+    if (typeof input.setSelectionRange === "function") {
+        input.setSelectionRange(len, len);
+    }
 });
 </script>
 
