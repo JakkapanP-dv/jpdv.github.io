@@ -29,11 +29,271 @@
             border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 450px;
+            /* ขยายความกว้างกล่องเพื่อให้รองรับ 2 คอลัมน์ได้สวยงาม */
+            max-width: 600px; 
         }
 
         h2 {
             text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+
+        /* เพิ่ม CSS Grid สำหรับจัดเรียง 2x2 */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* แบ่งเป็น 2 คอลัมน์เท่าๆ กัน */
+            gap: 20px; /* ระยะห่างระหว่างช่อง */
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ccd1d9;
+            border-radius: 6px;
+            font-size: 2rem; 
+            font-weight: bold;
+            text-align: right; 
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+        }
+
+        /* 1. ช่องราคาสินค้ารวม (โทนสีฟ้า) */
+        #price-total {
+            color: #154360;
+            background-color: #ebf5fb;
+            border-color: #85c1e9;
+        }
+        #price-total:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+
+        /* 2. ช่องสิทธิรัฐคงเหลือต่อวัน (โทนสีม่วง) */
+        #price-limit {
+            color: #5b2c6f;
+            background-color: #f5eef8;
+            border-color: #d7bde2;
+        }
+        #price-limit:focus {
+            border-color: #8e44ad;
+            box-shadow: 0 0 8px rgba(142, 68, 173, 0.3);
+        }
+
+        /* 3. ช่องเงินรัฐสนับสนุน (โทนสีเขียว) */
+        #price-gov {
+            color: #145a32;
+            background-color: #e8f8f5;
+            border-color: #82e0aa;
+        }
+        #price-gov:focus {
+            border-color: #2ecc71;
+            box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
+        }
+
+        /* 4. ช่องเงินเราออกเอง (โทนสีส้ม) */
+        #price-user {
+            color: #7e5109;
+            background-color: #fef5e7;
+            border-color: #f5cba7;
+        }
+        #price-user:focus {
+            border-color: #e67e22;
+            box-shadow: 0 0 8px rgba(230, 126, 34, 0.3);
+        }
+
+        .btn-clear {
+            width: 100%;
+            padding: 12px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: 'Google Sans', 'Noto Sans Thai', sans-serif;
+        }
+
+        .btn-clear:hover {
+            background-color: #c0392b;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* Responsive: หากหน้าจอแคบกว่า 500px ให้กลับไปแสดง 1 คอลัมน์เรียงลงมา */
+        @media (max-width: 500px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h2>คำนวณสัดส่วนราคา (60:40)</h2>
+        
+        <div class="input-grid">
+            <div class="form-row">
+                <label for="price-total">ราคาสินค้ารวม (100%) :</label>
+                <input type="number" id="price-total" step="0.01" placeholder="0.00">
+            </div>
+
+            <div class="form-row">
+                <label for="price-limit">สิทธิรัฐคงเหลือ (ไม่เกิน 200) :</label>
+                <input type="number" id="price-limit" min="0" max="200" value="200" step="0.01" placeholder="200.00">
+            </div>
+
+            <div class="form-row">
+                <label for="price-gov">เงินรัฐสนับสนุน (60%) :</label>
+                <input type="number" id="price-gov" step="0.01" placeholder="0.00">
+            </div>
+
+            <div class="form-row">
+                <label for="price-user">เงินเราออกเอง (40%) :</label>
+                <input type="number" id="price-user" step="0.01" placeholder="0.00">
+            </div>
+        </div>
+
+        <button type="button" class="btn-clear" id="btn-clear">ล้างข้อมูล</button>
+    </div>
+
+    <script>
+        const inputTotal = document.getElementById('price-total');
+        const inputLimit = document.getElementById('price-limit');
+        const inputGov = document.getElementById('price-gov');
+        const inputUser = document.getElementById('price-user');
+        const btnClear = document.getElementById('btn-clear');
+
+        function formatNumber(num) {
+            return Number.isInteger(num) ? num : parseFloat(num.toFixed(2));
+        }
+
+        function getLimitValue() {
+            let limit = parseFloat(inputLimit.value);
+            if (isNaN(limit)) return 0;
+            if (limit > 200) {
+                inputLimit.value = 200;
+                return 200;
+            }
+            return limit;
+        }
+
+        function calculateFromTotal() {
+            let total = parseFloat(inputTotal.value);
+            if (isNaN(total)) {
+                inputGov.value = '';
+                inputUser.value = '';
+                return;
+            }
+            let limit = getLimitValue();
+            let gov = total * 0.6;
+            
+            if (gov > limit) {
+                gov = limit;
+            }
+            let user = total - gov;
+
+            inputGov.value = formatNumber(gov);
+            inputUser.value = formatNumber(user);
+        }
+
+        function calculateFromGov() {
+            let gov = parseFloat(inputGov.value);
+            if (isNaN(gov)) {
+                inputTotal.value = '';
+                inputUser.value = '';
+                return;
+            }
+            let limit = getLimitValue();
+            
+            if (gov > limit) {
+                gov = limit;
+                inputGov.value = formatNumber(gov);
+            }
+
+            let total = gov / 0.6;
+            let user = total * 0.4;
+
+            inputTotal.value = formatNumber(total);
+            inputUser.value = formatNumber(user);
+        }
+
+        function calculateFromUser() {
+            let user = parseFloat(inputUser.value);
+            if (isNaN(user)) {
+                inputTotal.value = '';
+                inputGov.value = '';
+                return;
+            }
+            let limit = getLimitValue();
+            let totalRaw = user / 0.4;
+            let govRaw = totalRaw * 0.6;
+
+            let gov, total;
+            if (govRaw > limit) {
+                gov = limit;
+                total = limit + user; 
+            } else {
+                gov = govRaw;
+                total = totalRaw;
+            }
+
+            inputTotal.value = formatNumber(total);
+            inputGov.value = formatNumber(gov);
+        }
+
+        inputTotal.addEventListener('input', calculateFromTotal);
+        inputGov.addEventListener('input', calculateFromGov);
+        inputUser.addEventListener('input', calculateFromUser);
+        
+        inputLimit.addEventListener('input', function() {
+            getLimitValue(); 
+            if (inputTotal.value !== '') {
+                calculateFromTotal();
+            } else if (inputGov.value !== '') {
+                calculateFromGov();
+            } else if (inputUser.value !== '') {
+                calculateFromUser();
+            }
+        });
+
+        btnClear.addEventListener('click', function() {
+            inputTotal.value = '';
+            inputGov.value = '';
+            inputUser.value = '';
+            inputLimit.value = '200';
+        });
+    </script>
+
+</body>
+</html>
             color: #333;
             margin-bottom: 25px;
             font-size: 1.5rem;
