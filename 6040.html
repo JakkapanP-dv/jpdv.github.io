@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรแกรมคำนวณสัดส่วนราคา</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* เรียกใช้ Google Sans เป็นหลัก */
+            font-family: 'Google Sans', 'Noto Sans Thai', sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .calculator-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        /* ตั้งค่าพื้นฐานสำหรับ Input */
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ccd1d9;
+            border-radius: 6px;
+            
+            /* ปรับตามที่ต้องการ: ตัวหนา ขนาดใหญ่ขึ้น และชิดขวา */
+            font-size: 1.2rem; 
+            font-weight: bold;
+            text-align: right; 
+            
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+        }
+
+        /* 1. สีสำหรับช่อง ราคาสินค้ารวม (โทนสีฟ้า) */
+        #price-total {
+            color: #154360;
+            background-color: #ebf5fb;
+            border-color: #85c1e9;
+        }
+        #price-total:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+
+        /* 2. สีสำหรับช่อง เงินรัฐสนับสนุน (โทนสีเขียว) */
+        #price-gov {
+            color: #145a32;
+            background-color: #eaaf1; /* eafaf1 */
+            background-color: #e8f8f5;
+            border-color: #82e0aa;
+        }
+        #price-gov:focus {
+            border-color: #2ecc71;
+            box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
+        }
+
+        /* 3. สีสำหรับช่อง เงินเราออกเอง (โทนสีส้ม/เหลือง) */
+        #price-user {
+            color: #7e5109;
+            background-color: #fef5e7;
+            border-color: #f5cba7;
+        }
+        #price-user:focus {
+            border-color: #e67e22;
+            box-shadow: 0 0 8px rgba(230, 126, 34, 0.3);
+        }
+
+        /* ตั้งค่าปุ่ม */
+        .btn-clear {
+            width: 100%;
+            padding: 12px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            font-family: 'Google Sans', 'Noto Sans Thai', sans-serif;
+        }
+
+        .btn-clear:hover {
+            background-color: #c0392b;
+        }
+
+        /* ซ่อนลูกศรใน input type number */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <h2>คำนวณสัดส่วนราคา (60:40)</h2>
+        
+        <div class="form-row">
+            <label for="price-total">ราคาสินค้ารวม (100%) :</label>
+            <input type="number" id="price-total" step="0.01" placeholder="0.00">
+        </div>
+
+        <div class="form-row">
+            <label for="price-gov">เงินรัฐสนับสนุน (60%) :</label>
+            <input type="number" id="price-gov" step="0.01" placeholder="0.00">
+        </div>
+
+        <div class="form-row">
+            <label for="price-user">เงินเราออกเอง (40%) :</label>
+            <input type="number" id="price-user" step="0.01" placeholder="0.00">
+        </div>
+
+        <button type="button" class="btn-clear" id="btn-clear">ล้างข้อมูล</button>
+    </div>
+
+    <script>
+        const inputTotal = document.getElementById('price-total');
+        const inputGov = document.getElementById('price-gov');
+        const inputUser = document.getElementById('price-user');
+        const btnClear = document.getElementById('btn-clear');
+
+        function formatNumber(num) {
+            return Number.isInteger(num) ? num : parseFloat(num.toFixed(2));
+        }
+
+        inputTotal.addEventListener('input', function() {
+            let val = parseFloat(this.value);
+            if (isNaN(val)) {
+                inputGov.value = '';
+                inputUser.value = '';
+                return;
+            }
+            inputGov.value = formatNumber(val * 0.6);
+            inputUser.value = formatNumber(val * 0.4);
+        });
+
+        inputGov.addEventListener('input', function() {
+            let val = parseFloat(this.value);
+            if (isNaN(val)) {
+                inputTotal.value = '';
+                inputUser.value = '';
+                return;
+            }
+            let total = val / 0.6;
+            inputTotal.value = formatNumber(total);
+            inputUser.value = formatNumber(total * 0.4);
+        });
+
+        inputUser.addEventListener('input', function() {
+            let val = parseFloat(this.value);
+            if (isNaN(val)) {
+                inputTotal.value = '';
+                inputGov.value = '';
+                return;
+            }
+            let total = val / 0.4;
+            inputTotal.value = formatNumber(total);
+            inputGov.value = formatNumber(total * 0.6);
+        });
+
+        btnClear.addEventListener('click', function() {
+            inputTotal.value = '';
+            inputGov.value = '';
+            inputUser.value = '';
+        });
+    </script>
+
+</body>
+</html>
