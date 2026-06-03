@@ -14,14 +14,15 @@
         }
 
         body {
-            /* เรียกใช้ Google Sans เป็นหลัก */
             font-family: 'Google Sans', 'Noto Sans Thai', sans-serif;
             background-color: #f4f7f6;
             display: flex;
             justify-content: center;
-            align-items: center;
+            /* เปลี่ยนจาก center เป็น flex-start เพื่อให้ฟอร์มขึ้นไปอยู่บนสุด */
+            align-items: flex-start; 
             min-height: 100vh;
-            padding: 20px;
+            /* ปรับ padding ด้านบนเป็น 40px ให้เว้นระยะจากขอบจอพอดีๆ */
+            padding: 40px 20px; 
         }
 
         .calculator-container {
@@ -53,18 +54,14 @@
             font-size: 0.95rem;
         }
 
-        /* ตั้งค่าพื้นฐานสำหรับ Input */
         input[type="number"] {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #ccd1d9;
             border-radius: 6px;
-            
-            /* ปรับตามที่ต้องการ: ตัวหนา ขนาดใหญ่ขึ้น และชิดขวา */
             font-size: 1.2rem; 
             font-weight: bold;
             text-align: right; 
-            
             transition: all 0.3s ease;
         }
 
@@ -72,7 +69,7 @@
             outline: none;
         }
 
-        /* 1. สีสำหรับช่อง ราคาสินค้ารวม (โทนสีฟ้า) */
+        /* 1. ช่องราคาสินค้ารวม (โทนสีฟ้า) */
         #price-total {
             color: #154360;
             background-color: #ebf5fb;
@@ -83,10 +80,9 @@
             box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
         }
 
-        /* 2. สีสำหรับช่อง เงินรัฐสนับสนุน (โทนสีเขียว) */
+        /* 2. ช่องเงินรัฐสนับสนุน (โทนสีเขียว) */
         #price-gov {
             color: #145a32;
-            background-color: #eaaf1; /* eafaf1 */
             background-color: #e8f8f5;
             border-color: #82e0aa;
         }
@@ -95,7 +91,7 @@
             box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
         }
 
-        /* 3. สีสำหรับช่อง เงินเราออกเอง (โทนสีส้ม/เหลือง) */
+        /* 3. ช่องเงินเราออกเอง (โทนสีส้ม) */
         #price-user {
             color: #7e5109;
             background-color: #fef5e7;
@@ -106,7 +102,6 @@
             box-shadow: 0 0 8px rgba(230, 126, 34, 0.3);
         }
 
-        /* ตั้งค่าปุ่ม */
         .btn-clear {
             width: 100%;
             padding: 12px;
@@ -126,7 +121,6 @@
             background-color: #c0392b;
         }
 
-        /* ซ่อนลูกศรใน input type number */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
