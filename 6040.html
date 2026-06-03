@@ -18,10 +18,8 @@
             background-color: #f4f7f6;
             display: flex;
             justify-content: center;
-            /* เปลี่ยนจาก center เป็น flex-start เพื่อให้ฟอร์มขึ้นไปอยู่บนสุด */
             align-items: flex-start; 
             min-height: 100vh;
-            /* ปรับ padding ด้านบนเป็น 40px ให้เว้นระยะจากขอบจอพอดีๆ */
             padding: 40px 20px; 
         }
 
@@ -80,7 +78,18 @@
             box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
         }
 
-        /* 2. ช่องเงินรัฐสนับสนุน (โทนสีเขียว) */
+        /* 2. ช่องสิทธิรัฐคงเหลือต่อวัน (โทนสีม่วง) */
+        #price-limit {
+            color: #5b2c6f;
+            background-color: #f5eef8;
+            border-color: #d7bde2;
+        }
+        #price-limit:focus {
+            border-color: #8e44ad;
+            box-shadow: 0 0 8px rgba(142, 68, 173, 0.3);
+        }
+
+        /* 3. ช่องเงินรัฐสนับสนุน (โทนสีเขียว) */
         #price-gov {
             color: #145a32;
             background-color: #e8f8f5;
@@ -91,7 +100,7 @@
             box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
         }
 
-        /* 3. ช่องเงินเราออกเอง (โทนสีส้ม) */
+        /* 4. ช่องเงินเราออกเอง (โทนสีส้ม) */
         #price-user {
             color: #7e5109;
             background-color: #fef5e7;
@@ -142,6 +151,11 @@
         </div>
 
         <div class="form-row">
+            <label for="price-limit">สิทธิรัฐคงเหลือต่อวัน (ไม่เกิน 200) :</label>
+            <input type="number" id="price-limit" min="0" max="200" value="200" step="0.01" placeholder="200.00">
+        </div>
+
+        <div class="form-row">
             <label for="price-gov">เงินรัฐสนับสนุน (60%) :</label>
             <input type="number" id="price-gov" step="0.01" placeholder="0.00">
         </div>
@@ -156,6 +170,7 @@
 
     <script>
         const inputTotal = document.getElementById('price-total');
+        const inputLimit = document.getElementById('price-limit');
         const inputGov = document.getElementById('price-gov');
         const inputUser = document.getElementById('price-user');
         const btnClear = document.getElementById('btn-clear');
@@ -164,45 +179,110 @@
             return Number.isInteger(num) ? num : parseFloat(num.toFixed(2));
         }
 
-        inputTotal.addEventListener('input', function() {
-            let val = parseFloat(this.value);
-            if (isNaN(val)) {
+        // ฟังก์ชันดึงค่าสิทธิรัฐคงเหลือ และล็อกไม่ให้เกิน 200
+        function getLimitValue() {
+            let limit = parseFloat(inputLimit.value);
+            if (isNaN(limit)) return 0;
+            if (limit > 200) {
+                inputLimit.value = 200;
+                return 200;
+            }
+            return limit;
+        }
+
+        // ฟังก์ชันคำนวณเมื่อเปลี่ยนค่า "ราคาสินค้ารวม"
+        function calculateFromTotal() {
+            let total = parseFloat(inputTotal.value);
+            if (isNaN(total)) {
                 inputGov.value = '';
                 inputUser.value = '';
                 return;
             }
-            inputGov.value = formatNumber(val * 0.6);
-            inputUser.value = formatNumber(val * 0.4);
-        });
+            let limit = getLimitValue();
+            let gov = total * 0.6;
+            
+            // เงื่อนไข: ถ้าเงินรัฐคำนวณได้มากกว่าสิทธิคงเหลือ
+            if (gov > limit) {
+                gov = limit;
+            }
+            let user = total - gov;
 
-        inputGov.addEventListener('input', function() {
-            let val = parseFloat(this.value);
-            if (isNaN(val)) {
+            inputGov.value = formatNumber(gov);
+            inputUser.value = formatNumber(user);
+        }
+
+        // ฟังก์ชันคำนวณเมื่อเปลี่ยนค่า "เงินรัฐสนับสนุน"
+        function calculateFromGov() {
+            let gov = parseFloat(inputGov.value);
+            if (isNaN(gov)) {
                 inputTotal.value = '';
                 inputUser.value = '';
                 return;
             }
-            let total = val / 0.6;
-            inputTotal.value = formatNumber(total);
-            inputUser.value = formatNumber(total * 0.4);
-        });
+            let limit = getLimitValue();
+            
+            // ล็อกไม่ให้กรอกเงินรัฐเกินสิทธิคงเหลือต่อวัน
+            if (gov > limit) {
+                gov = limit;
+                inputGov.value = formatNumber(gov);
+            }
 
-        inputUser.addEventListener('input', function() {
-            let val = parseFloat(this.value);
-            if (isNaN(val)) {
+            let total = gov / 0.6;
+            let user = total * 0.4;
+
+            inputTotal.value = formatNumber(total);
+            inputUser.value = formatNumber(user);
+        }
+
+        // ฟังก์ชันคำนวณเมื่อเปลี่ยนค่า "เงินเราออกเอง"
+        function calculateFromUser() {
+            let user = parseFloat(inputUser.value);
+            if (isNaN(user)) {
                 inputTotal.value = '';
                 inputGov.value = '';
                 return;
             }
-            let total = val / 0.4;
+            let limit = getLimitValue();
+            let totalRaw = user / 0.4;
+            let govRaw = totalRaw * 0.6;
+
+            let gov, total;
+            // ถ้ากรณีคิดย้อนกลับแล้ว ยอดรัฐเกินสิทธิที่กำหนดไว้
+            if (govRaw > limit) {
+                gov = limit;
+                total = limit + user; // เงินเราออกเองที่กรอกมา + สิทธิรัฐสูงสุดที่ช่วยได้
+            } else {
+                gov = govRaw;
+                total = totalRaw;
+            }
+
             inputTotal.value = formatNumber(total);
-            inputGov.value = formatNumber(total * 0.6);
+            inputGov.value = formatNumber(gov);
+        }
+
+        // Event Listeners
+        inputTotal.addEventListener('input', calculateFromTotal);
+        inputGov.addEventListener('input', calculateFromGov);
+        inputUser.addEventListener('input', calculateFromUser);
+        
+        // เมื่อแก้ไขช่องสิทธิรัฐคงเหลือ ให้คำนวณใหม่ตามสิทธิ์ปัจจุบันทันที
+        inputLimit.addEventListener('input', function() {
+            getLimitValue(); // เช็กไม่ให้เกิน 200
+            if (inputTotal.value !== '') {
+                calculateFromTotal();
+            } else if (inputGov.value !== '') {
+                calculateFromGov();
+            } else if (inputUser.value !== '') {
+                calculateFromUser();
+            }
         });
 
+        // ปุ่มล้างข้อมูล (คงค่าสิทธิรัฐเริ่มต้นไว้ที่ 200)
         btnClear.addEventListener('click', function() {
             inputTotal.value = '';
             inputGov.value = '';
             inputUser.value = '';
+            inputLimit.value = '200';
         });
     </script>
 
