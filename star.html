@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เกมเปิดแผ่นป้าย 13 แผ่น</title>
+    <title>เกมเปิดแผ่นป้าย 13 แผ่น (เวอร์ชันปุ่ม รีเซ็ต)</title>
     <style>
         /* นำเข้าฟอนต์ Google Sans */
         @font-face {
@@ -42,7 +42,7 @@
             grid-template-columns: repeat(7, 1fr);
             gap: 15px;
             width: 100%;
-            max-width: 900px; /* จำกัดขนาดสูงสุดไม่ให้ใหญ่เกินไปในจอ PC */
+            max-width: 900px;
         }
 
         /* ปรับให้รองรับหน้าจอขนาดเล็ก */
@@ -60,7 +60,7 @@
         /* รูปแบบแผ่นป้าย */
         .card {
             width: 100%;
-            aspect-ratio: 1 / 1; /* บังคับให้เป็นสี่เหลี่ยมจัตุรัส */
+            aspect-ratio: 1 / 1; /* สี่เหลี่ยมจัตุรัส */
             perspective: 1000px;
             cursor: pointer;
         }
@@ -99,10 +99,41 @@
         .card-back {
             background-color: #1c1c1c; /* พื้นหลังสีดำด้าน (Matte Black) */
             transform: rotateY(180deg);
+            position: relative;
+        }
+
+        /* ปุ่ม Reset ไอคอน */
+        .reset-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .reset-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
         }
 
         /* ลบ Hilight ตอนกดบนมือถือ */
-        .card {
+        .card, .reset-btn {
             -webkit-tap-highlight-color: transparent;
         }
     </style>
@@ -113,28 +144,28 @@
     <div id="game-board"></div>
 
     <script>
-        // 5 ขนาดของดวงดาวที่สุ่ม (คิดเป็นเปอร์เซ็นต์ของพื้นที่แผ่นป้าย)
+        // 5 ขนาดของดวงดาวที่สุ่ม (คิดเป็นเปอร์เซ็นต์)
         const starSizes = ['35%', '50%', '65%', '80%', '95%'];
         const totalCards = 13;
         const board = document.getElementById('game-board');
 
-        // ฟังก์ชันสร้าง SVG ดาว 6 แฉกแบบ 3 มิติ
+        // ฟังก์ชันสร้าง SVG ดาว 6 แฉกแบบ 3 มิติสีทอง
         function create3DStarSVG(size) {
             return `
-                <svg viewBox="0 0 100 100" style="width: ${size}; height: ${size}; overflow: visible;">
+                <svg class="star-svg" viewBox="0 0 100 100" style="width: ${size}; height: ${size}; overflow: visible; transition: width 0.3s, height 0.3s;">
                     <defs>
-                        <filter id="3d-effect" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur" />
-                            <feSpecularLighting in="blur" surfaceScale="5" specularConstant="1.2" specularExponent="20" lighting-color="#ffffff" result="specOut">
-                                <fePointLight x="-20" y="-20" z="60" />
+                        <filter id="3d-gold-effect" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur" />
+                            <feSpecularLighting in="blur" surfaceScale="5" specularConstant="1.5" specularExponent="15" lighting-color="#ffffff" result="specOut">
+                                <fePointLight x="-30" y="-30" z="50" />
                             </feSpecularLighting>
                             <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut2" />
                             <feComposite in="SourceGraphic" in2="specOut2" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
-                            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.9"/>
+                            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.8"/>
                         </filter>
                     </defs>
-                    <g filter="url(#3d-effect)">
-                        <path d="M50 0 L64.4 25 L93.3 25 L78.8 50 L93.3 75 L64.4 75 L50 100 L35.6 75 L6.7 75 L21.2 50 L6.7 25 L35.6 25 Z" fill="#ffffff" />
+                    <g filter="url(#3d-gold-effect)">
+                        <path d="M50 0 L64.4 25 L93.3 25 L78.8 50 L93.3 75 L64.4 75 L50 100 L35.6 75 L6.7 75 L21.2 50 L6.7 25 L35.6 25 Z" fill="#FFD700" />
                     </g>
                 </svg>
             `;
@@ -150,21 +181,51 @@
 
             const cardFront = document.createElement('div');
             cardFront.className = 'card-front';
-            cardFront.innerText = '?';
+            cardFront.innerText = (i + 1); // เปลี่ยนจาก ? เป็นตัวเลขป้ายเพื่อความสวยงาม (เปลี่ยนกลับเป็น '?' ได้ครับ)
 
             const cardBack = document.createElement('div');
             cardBack.className = 'card-back';
             
-            // สุ่มขนาดดาว 1 ใน 5 ขนาด
+            // สุ่มขนาดดาว 1 ใน 5 ขนาดตอนเริ่มต้น
             const randomSize = starSizes[Math.floor(Math.random() * starSizes.length)];
             cardBack.innerHTML = create3DStarSVG(randomSize);
 
-            // ประกอบ HTML
+            // สร้างปุ่ม Reset (ไอคอนลูกศรหมุน) วางไว้หลังป้าย
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'reset-btn';
+            resetBtn.title = 'ปิดป้ายและสุ่มขนาดใหม่';
+            resetBtn.innerHTML = `
+                <svg viewBox="0 0 24 24">
+                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+            `;
+
+            // Event สำหรับปุ่ม Reset
+            resetBtn.addEventListener('click', (e) => {
+                // e.stopPropagation() สำคัญมาก! เพื่อไม่ให้เกิด Event Bubble ไปสั่งเปิดป้ายซ้ำตอนที่เรากดปุ่ม
+                e.stopPropagation(); 
+                
+                // 1. สั่งปิดป้าย (หมุนกลับไปด้านหน้า)
+                card.classList.remove('flipped');
+                
+                // 2. สุ่มขนาดดาวใหม่หลังจากป้ายเริ่มหมุนกลับ (ใช้ดีเลย์เล็กน้อยเพื่อให้เนียนตา)
+                setTimeout(() => {
+                    const newSize = starSizes[Math.floor(Math.random() * starSizes.length)];
+                    const starSvg = cardBack.querySelector('.star-svg');
+                    if (starSvg) {
+                        starSvg.style.width = newSize;
+                        starSvg.style.height = newSize;
+                    }
+                }, 200);
+            });
+
+            // ประกอบชิ้นส่วนแผ่นป้าย
+            cardBack.appendChild(resetBtn);
             cardInner.appendChild(cardFront);
             cardInner.appendChild(cardBack);
             card.appendChild(cardInner);
 
-            // เพิ่ม Event คลิกเพื่อกลับด้าน
+            // Event สำหรับการคลิกเปิดป้าย
             card.addEventListener('click', () => {
                 card.classList.toggle('flipped');
             });
